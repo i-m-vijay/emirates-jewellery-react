@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Emirates Gold and Diamonds favicon">
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+  <g fill="#005c5a">
+    <path d="M92 156h328l46 78-210 198L46 234z"/>
+    <path d="M119 176 72 234h103z" fill="#ffffff" opacity=".18"/>
+    <path d="M137 176h103l-52 58z" fill="#ffffff" opacity=".1"/>
+    <path d="M272 176h103l-51 58z" fill="#ffffff" opacity=".16"/>
+    <path d="M392 176l48 58H338z" fill="#ffffff" opacity=".08"/>
+    <path d="M82 252h99l58 137z" fill="#ffffff" opacity=".12"/>
+    <path d="M201 252h110l-55 139z" fill="#ffffff" opacity=".2"/>
+    <path d="M331 252h99L273 389z" fill="#ffffff" opacity=".1"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+    <path d="M92 156h328l46 78-210 198L46 234z"/>
+    <path d="M92 156 176 234 256 156 336 234 420 156"/>
+    <path d="M46 234h420"/>
+    <path d="M176 234 256 432 336 234"/>
+  </g>
+</svg>
