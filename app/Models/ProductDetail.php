@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductDetail extends Model
 {
@@ -11,6 +12,16 @@ class ProductDetail extends Model
 
     protected $table = 'product_detail';
     protected $primaryKey = 'record_id';
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function subcategory(): BelongsTo
+    {
+        return $this->belongsTo(Subcategory::class);
+    }
     
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -18,6 +29,8 @@ class ProductDetail extends Model
     protected $fillable = [
         'product_id',
         'sku',
+        'category_id',
+        'subcategory_id',
         'type',
         'gtin',
         'name',

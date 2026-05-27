@@ -21,10 +21,25 @@
                     <i class="fas fa-chart-line mr-3"></i>
                     Dashboard
                 </a>
-                <a href="{{ route('admin.products.index') }}" 
+                <a href="{{ route('admin.products.index') }}"
                    class="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.products.*') ? 'bg-gray-800 text-white' : '' }}">
                     <i class="fas fa-box mr-3"></i>
                     Products
+                </a>
+                <a href="{{ route('admin.product-details.index') }}"
+                   class="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.product-details.*') ? 'bg-gray-800 text-white' : '' }}">
+                    <i class="fas fa-gem mr-3"></i>
+                    Product Details
+                </a>
+                <a href="{{ route('admin.categories.index') }}"
+                   class="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.categories.*') ? 'bg-gray-800 text-white' : '' }}">
+                    <i class="fas fa-tags mr-3"></i>
+                    Categories
+                </a>
+                <a href="{{ route('admin.subcategories.index') }}"
+                   class="px-6 py-3 pl-10 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.subcategories.*') ? 'bg-gray-800 text-white' : '' }}">
+                    <i class="fas fa-layer-group mr-3"></i>
+                    Subcategories
                 </a>
             </nav>
 
