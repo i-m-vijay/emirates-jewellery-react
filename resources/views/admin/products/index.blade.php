@@ -14,9 +14,14 @@
             </button>
         </form>
     </div>
-    <a href="{{ route('admin.products.create') }}" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-        <i class="fas fa-plus mr-2"></i>Add Product
-    </a>
+    <div class="flex gap-2">
+        <a href="{{ route('admin.products.import.form') }}" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            <i class="fas fa-file-import mr-2"></i>Import CSV
+        </a>
+        <a href="{{ route('admin.products.create') }}" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <i class="fas fa-plus mr-2"></i>Add Product
+        </a>
+    </div>
 </div>
 
 <div class="bg-white rounded-lg shadow overflow-hidden">
