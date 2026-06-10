@@ -13,6 +13,7 @@ class ProductDetail extends Model
     protected $table = 'product_detail';
     protected $primaryKey = 'record_id';
 
+    // ── Legacy category taxonomy ──────────────────────────────────────────
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -21,6 +22,32 @@ class ProductDetail extends Model
     public function subcategory(): BelongsTo
     {
         return $this->belongsTo(Subcategory::class);
+    }
+
+    // ── New jewellery taxonomy ────────────────────────────────────────────
+    public function productType(): BelongsTo
+    {
+        return $this->belongsTo(ProductType::class);
+    }
+
+    public function productCategory(): BelongsTo
+    {
+        return $this->belongsTo(ProductCategory::class);
+    }
+
+    public function jewellery(): BelongsTo
+    {
+        return $this->belongsTo(Jewellery::class);
+    }
+
+    public function collectionCategory(): BelongsTo
+    {
+        return $this->belongsTo(CollectionCategory::class);
+    }
+
+    public function collectionSubcategory(): BelongsTo
+    {
+        return $this->belongsTo(CollectionSubcategory::class);
     }
     
     const CREATED_AT = 'created_at';
@@ -31,6 +58,11 @@ class ProductDetail extends Model
         'sku',
         'category_id',
         'subcategory_id',
+        'product_type_id',
+        'product_category_id',
+        'jewellery_id',
+        'collection_category_id',
+        'collection_subcategory_id',
         'type',
         'gtin',
         'name',

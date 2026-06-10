@@ -17,10 +17,14 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
+        // Local development
         'http://localhost:5173',
         'http://localhost:3000',
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
+        // Production frontend — add your live React app URL here
+        'https://newemirates.thepehnawa.com',
+        'https://www.newemirates.thepehnawa.com',
     ],
 
     'allowed_origins_patterns' => [],
@@ -29,8 +33,8 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 86400,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
