@@ -7,6 +7,7 @@ import { useProduct } from '../context/ProductContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
+import { useAuth } from '../context/AuthContext';
 
 const PER_PAGE = 50;
 
@@ -77,6 +78,7 @@ function ProductCard({ product, onClick }) {
   const discountPct = hasDiscount
     ? Math.round((1 - parseFloat(product.sale_price) / parseFloat(product.regular_price)) * 100)
     : null;
+    const { isAuthenticated, openAuth } = useAuth();
 
   return (
     <motion.div className="product-card" whileHover={{ y: -4 }} onClick={onClick} style={{ cursor: 'pointer' }}>
@@ -122,7 +124,11 @@ function ProductCard({ product, onClick }) {
         {product.description && <p className="product-card__desc">{product.description}</p>}
         <button
           className={`product-card__cart-btn${inCart ? ' in-cart' : ''}`}
-          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isAuthenticated) { openAuth({ product }); return; }
+            addToCart(product);
+          }}
           disabled={!product.in_stock}
         >
           <ShoppingBag size={14} />

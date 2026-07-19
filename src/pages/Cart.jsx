@@ -16,6 +16,7 @@ function Cart() {
   const { showToast } = useToast();
   const [coupon, setCoupon] = useState('');
   const [couponMsg, setCouponMsg] = useState('');
+  const TAX_RATE = 0.13;
 
   const handleMoveToWishlist = (product) => {
     addToWishlist(product);
@@ -158,9 +159,13 @@ function Cart() {
               <span>Actual Price</span>
               <span>${fmt(subtotal)}</span>
             </div>
+            <div className="cart-summary__row">
+              <span>Tax ({TAX_RATE * 100}%)</span>
+              <span>${fmt(subtotal * TAX_RATE)}</span>
+            </div>
             <div className="cart-summary__row cart-summary__row--total">
               <span>You Pay a Total Of</span>
-              <strong>${fmt(subtotal)}</strong>
+              <strong>${fmt(subtotal + (subtotal * TAX_RATE))}</strong>
             </div>
           </div>
 

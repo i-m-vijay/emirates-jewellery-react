@@ -8,6 +8,7 @@ import { useProduct } from '../context/ProductContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
+import { useAuth } from '../context/AuthContext';
 
 const SORT_OPTIONS = [
   { label: 'Position',           value: 'default' },
@@ -62,6 +63,7 @@ function ProductCard({ product, onClick }) {
   const { toggleItem, isInWishlist } = useWishlist();
   const { addItem: addToCart, isInCart } = useCart();
   const guard = useAuthGuard();
+  const { isAuthenticated, openAuth } = useAuth();
 
   const wishlisted  = isInWishlist(product.record_id);
   const inCart      = isInCart(product.record_id);
@@ -115,7 +117,11 @@ function ProductCard({ product, onClick }) {
         {product.description && <p className="product-card__desc">{product.description}</p>}
         <button
           className={`product-card__cart-btn${inCart ? ' in-cart' : ''}`}
-          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isAuthenticated) { openAuth({ product }); return; }
+            addToCart(product);
+          }}
           disabled={!product.in_stock}
         >
           <ShoppingBag size={14} />

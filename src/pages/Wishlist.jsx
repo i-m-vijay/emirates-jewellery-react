@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Trash2, ShoppingCart } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 function fmt(n) {
   return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -11,12 +11,12 @@ function fmt(n) {
 function Wishlist() {
   const { items, removeItem } = useWishlist();
   const { addItem, isInCart } = useCart();
-  const { showToast } = useToast();
+  const { isAuthenticated, openAuth } = useAuth();
   const navigate = useNavigate();
 
   const handleAddToCart = (product) => {
+    if (!isAuthenticated) { openAuth({ product }); return; }
     addItem(product);
-    showToast(`"${product.name}" added to cart`, 'success');
   };
 
   /* ── Empty state ── */

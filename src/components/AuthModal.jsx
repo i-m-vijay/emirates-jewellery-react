@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { loginUser, registerUser, requestOtp, verifyOtp } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
@@ -593,6 +594,9 @@ function AuthModal({ onClose }) {
   const [pendingEmail, setPendingEmail] = useState('');
   const [pendingPurpose, setPendingPurpose] = useState('');
   const [verifiedMsg, setVerifiedMsg] = useState('');
+  const rootRef = useRef(null);
+  const location = useLocation();
+  const _ignoreOutsideClick = useRef(true);
 
   const handleSuccess = (token, userData) => {
     login(token, userData);
@@ -610,8 +614,49 @@ function AuthModal({ onClose }) {
     setView('login');
   };
 
+  // Close when clicking outside the modal
+  useEffect(() => {
+    // ignore clicks that happen immediately after mount (the click that opened the modal)
+    _ignoreOutsideClick.current = true;
+    const clearTimer = setTimeout(() => { _ignoreOutsideClick.current = false; }, 100);
+
+    const onDocMouseDown = (e) => {
+      if (_ignoreOutsideClick.current) return;
+      if (!rootRef.current) return;
+      if (!rootRef.current.contains(e.target)) onClose();
+    };
+
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => {
+      clearTimeout(clearTimer);
+      document.removeEventListener('mousedown', onDocMouseDown);
+    };
+  }, [onClose]);
+
+  // Close when location (route) changes — but skip the initial mount
+  const _prevLocationKey = useRef(location.key);
+  useEffect(() => {
+    if (_prevLocationKey.current && _prevLocationKey.current !== location.key) {
+      onClose();
+    }
+    _prevLocationKey.current = location.key;
+  }, [location.key]);
+
+  // Scroll the modal into view and focus first interactive element on open
+  useEffect(() => {
+    if (!rootRef.current) return;
+    try {
+      rootRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) {
+      try { rootRef.current.scrollIntoView(); } catch (_) { /* ignore */ }
+    }
+    // focus first focusable element inside modal for accessibility
+    const first = rootRef.current.querySelector('input, button, select, textarea, [tabindex]');
+    try { if (first && typeof first.focus === 'function') first.focus(); } catch (_) { /* ignore */ }
+  }, []);
+
   return (
-    <div className="auth-dropdown">
+    <div className="auth-dropdown" ref={rootRef}>
       {view === 'login' && (
         <LoginForm
           onRegister={() => setView('register')}

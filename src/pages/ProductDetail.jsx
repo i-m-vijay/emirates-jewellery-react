@@ -9,6 +9,7 @@ import { useProduct } from '../context/ProductContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
+import { useAuth } from '../context/AuthContext';
 import { fetchProductDetail } from '../api/productApi';
 
 function parseImages(images) {
@@ -241,6 +242,7 @@ function ProductDetail() {
   const { toggleItem, isInWishlist } = useWishlist();
   const { addItem: addToCart, isInCart } = useCart();
   const guard = useAuthGuard();
+  const { isAuthenticated, openAuth } = useAuth();
 
   const [activeImg, setActiveImg] = useState(0);
   const [similarStart, setSimilarStart] = useState(0);
@@ -407,7 +409,10 @@ function ProductDetail() {
             <button
               className={`pdp__add-cart${isInCart(product.record_id) ? ' in-cart' : ''}`}
               disabled={!product.in_stock}
-              onClick={() => addToCart(product)}
+              onClick={() => {
+                if (!isAuthenticated) { openAuth({ product }); return; }
+                addToCart(product);
+              }}
             >
               <ShoppingBag size={18} />
               {isInCart(product.record_id) ? 'Added to Cart ✓' : 'Add to Cart'}

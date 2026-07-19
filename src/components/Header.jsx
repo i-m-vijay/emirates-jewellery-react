@@ -33,14 +33,15 @@ function UserAvatar({ name }) {
 
 function Header() {
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, openAuth, authModalOpen, closeAuth, pendingAuthPayload, clearPendingAuthPayload } = useAuth();
   const { count: wishlistCount } = useWishlist();
   const { count: cartCount } = useCart();
+  const { addItem } = useCart();
   const [menuOpen, setMenuOpen]                       = useState(false);
   const [activeOffcanvasItem, setActiveOffcanvasItem] = useState(null);
   const [searchQuery, setSearchQuery]                 = useState('');
   const debounceRef = useRef(null);
-  const [authOpen, setAuthOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeNav, setActiveNav] = useState(null);
   const accountRef = useRef(null);
@@ -56,15 +57,31 @@ function Header() {
 
   // Close auth panel when clicking outside
   useEffect(() => {
-    if (!authOpen) return;
+    if (!accountOpen) return;
     const handler = (e) => {
       if (accountRef.current && !accountRef.current.contains(e.target)) {
-        setAuthOpen(false);
+        setAccountOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [authOpen]);
+  }, [accountOpen]);
+
+  // When user logs in, check for a pending add-to-cart action set via `openAuth` and execute it
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    try {
+      const payload = pendingAuthPayload;
+      if (!payload) return;
+      if (payload.product) {
+        addItem(payload.product, payload.qty || 1);
+      }
+      clearPendingAuthPayload();
+    } catch (e) {
+      // ignore
+      clearPendingAuthPayload();
+    }
+  }, [isAuthenticated, addItem, pendingAuthPayload, clearPendingAuthPayload]);
 
   const handleLogout = async () => {
     try { await logoutUser(); } catch { /* ignore API error, still clear session */ }
@@ -133,7 +150,7 @@ function Header() {
             <div className="account-wrap" ref={accountRef}>
               <button
                 className="header-icon-btn user-dropdown-btn"
-                onClick={() => setAuthOpen((o) => !o)}
+                onClick={() => { if (isAuthenticated) setAccountOpen((o) => !o); else openAuth(); }}
                 aria-label="Account"
               >
                 {isAuthenticated
@@ -142,24 +159,22 @@ function Header() {
                 <ChevronDown size={16} />
               </button>
 
-              {authOpen && (
-                isAuthenticated ? (
-                  <div className="account-dropdown auth-user-panel">
-                    <p className="auth-user-panel__greeting">
-                      Hello, <strong>{user?.first_name} {user?.last_name}</strong>
-                    </p>
-                    <p className="auth-user-panel__email">{user?.email}</p>
-                    <hr className="auth-user-panel__divider" />
-                    <a className="auth-user-panel__link"><Package size={18} /> My Orders</a>
-                    <a className="auth-user-panel__link"><User size={18} /> My Profile</a>
-                    <button className="auth-user-panel__logout" onClick={handleLogout}>
-                      <LogOut size={18} /> Logout
-                    </button>
-                  </div>
-                ) : (
-                  <AuthModal onClose={() => setAuthOpen(false)} />
-                )
+              {accountOpen && isAuthenticated && (
+                <div className="account-dropdown auth-user-panel">
+                  <p className="auth-user-panel__greeting">
+                    Hello, <strong>{user?.first_name} {user?.last_name}</strong>
+                  </p>
+                  <p className="auth-user-panel__email">{user?.email}</p>
+                  <hr className="auth-user-panel__divider" />
+                  <a className="auth-user-panel__link"><Package size={18} /> My Orders</a>
+                  <a className="auth-user-panel__link"><User size={18} /> My Profile</a>
+                  <button className="auth-user-panel__logout" onClick={handleLogout}>
+                    <LogOut size={18} /> Logout
+                  </button>
+                </div>
               )}
+
+              {authModalOpen && <AuthModal onClose={closeAuth} />}
             </div>
 
             <div className="header-badge-wrap" onClick={() => navigate('/wishlist')} style={{ cursor: 'pointer' }}>

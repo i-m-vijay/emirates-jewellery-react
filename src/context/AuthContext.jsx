@@ -11,6 +11,8 @@ export function AuthProvider({ children }) {
     const stored = sessionStorage.getItem(USER_KEY);
     try { return stored ? JSON.parse(stored) : null; } catch { return null; }
   });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingAuthPayload, setPendingAuthPayload] = useState(null);
 
   const login = useCallback((newToken, userData) => {
     sessionStorage.setItem(TOKEN_KEY, newToken);
@@ -18,6 +20,17 @@ export function AuthProvider({ children }) {
     setToken(newToken);
     setUser(userData);
   }, []);
+
+  const openAuth = useCallback((payload = null) => {
+    setPendingAuthPayload(payload);
+    setAuthModalOpen(true);
+  }, []);
+
+  const closeAuth = useCallback(() => {
+    setAuthModalOpen(false);
+  }, []);
+
+  const clearPendingAuthPayload = useCallback(() => setPendingAuthPayload(null), []);
 
   const logout = useCallback(() => {
     sessionStorage.removeItem(TOKEN_KEY);
@@ -27,7 +40,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ token, user, isAuthenticated: Boolean(token), login, logout }}>
+    <AuthContext.Provider value={{ token, user, isAuthenticated: Boolean(token), login, logout, authModalOpen, openAuth, closeAuth, pendingAuthPayload, clearPendingAuthPayload, }}>
       {children}
     </AuthContext.Provider>
   );

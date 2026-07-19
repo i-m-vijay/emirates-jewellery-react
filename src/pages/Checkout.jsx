@@ -256,6 +256,7 @@ function CheckoutRegisterForm({ onSuccess }) {
 /* ── Order Summary sidebar ── */
 function OrderSummary() {
   const { items, subtotal } = useCart();
+  const TAX_RATE = 0.13;
   return (
     <aside className="co-summary">
       <h3 className="co-summary__title">Order Summary</h3>
@@ -290,9 +291,13 @@ function OrderSummary() {
           <span>Actual Price</span>
           <span>${fmt(subtotal)}</span>
         </div>
+        <div className="co-summary__price-row">
+          <span>Tax ({TAX_RATE * 100}%)</span>
+          <span>${fmt(subtotal * TAX_RATE)}</span>
+        </div>
         <div className="co-summary__price-row co-summary__price-row--total">
           <span>Total</span>
-          <strong>${fmt(subtotal)}</strong>
+          <strong>${fmt(subtotal + (subtotal * TAX_RATE))}</strong>
         </div>
         <p className="co-summary__note">Shipping fees and taxes are based on the address selected</p>
       </div>
