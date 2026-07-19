@@ -152,20 +152,285 @@ class ProductDetailApiController extends Controller
      * For rings / necklace / wedding the categories column is searched
      * using keyword patterns instead of the meta_metal column.
      */
-    public function categoriesByMetal(Request $request): JsonResponse
+    private const GOLD_SINGLE_CATEGORIES = [
+        'Bands',
+        'Bangles',
+        'Beaded Necklaces',
+        'Cuban Chains',
+        'Lockets',
+    ];
+
+    private const GOLD_EARRING_SUBCATEGORIES = [
+        'Dangle Earrings',
+        'Drop Earrings',
+        'Hoop Earrings',
+    ];
+
+    private const GOLD_RING_SUBCATEGORIES = [
+        'Solitaire Rings',
+        'Multi-Stone Rings',
+        'Engagement Rings',
+        'Cocktail Rings',
+        'Diamond Rings',
+        'Wedding Rings',
+        'Eternity Rings',
+    ];
+
+    private const METAL_CATEGORY_MAP = [
+        'gold' => [
+            'Bands', 'Bangles', 'Beaded Necklaces', 'Cocktail Rings', 'Cuban Chains',
+            'Dangle Earrings', 'Diamond Rings', 'Drop Earrings', 'Engagement Rings',
+            'Eternity Rings', 'Hoop Earrings', 'Lockets', 'Multi-Stone Rings',
+            'Rings', 'Solitaire Rings', 'Wedding Rings',
+        ],
+        'diamond'     => ['Diamond Rings', 'Wedding Rings'],
+        'rings'       => ['Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings'],
+        'earrings'    => ['Hoop Earrings', 'Drop Earrings', 'Dangle Earrings'],
+        'necklaces'   => ['Beaded Necklaces'],
+        'wedding'     => ['Wedding Rings'],
+        'collections' => ['Bands', 'Bangles', 'Beaded Necklaces', 'Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings'],
+        'gifts'       => ['Bangles', 'Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings', 'Hoop Earrings', 'Drop Earrings'],
+    ];
+
+    private const GENDER_CATEGORY_MAP = [
+        'gold' => [
+            'for_him' => ['Rings', 'Bands'],
+            'for_her' => ['Bands', 'Bangles', 'Beaded Necklaces', 'Cuban Chains', 'Lockets', 'Rings', 'Earrings'],
+            'kids'    => ['Lockets', 'Earrings', 'Bands', 'Bangles'],
+        ],
+        'diamond' => [
+            'for_him' => ['Diamond Rings', 'Engagement Rings'],
+            'for_her' => ['Diamond Rings', 'Engagement Rings'],
+            'kids'    => ['Diamond Rings'],
+        ],
+        'rings' => [
+            'for_him' => ['Diamond Rings', 'Solitaire Rings', 'Engagement Rings', 'Wedding Rings'],
+            'for_her' => ['Diamond Rings', 'Engagement Rings', 'Wedding Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Eternity Rings', 'Cocktail Rings'],
+            'kids'    => ['Diamond Rings', 'Solitaire Rings'],
+        ],
+        'earrings' => [
+            'for_him' => [],
+            'for_her' => ['Dangle Earrings', 'Drop Earrings', 'Hoop Earrings'],
+            'kids'    => ['Dangle Earrings', 'Drop Earrings', 'Hoop Earrings'],
+        ],
+        'necklaces' => [
+            'for_him' => [],
+            'for_her' => ['Beaded Necklaces'],
+            'kids'    => ['Beaded Necklaces'],
+        ],
+        'wedding' => [
+            'for_him' => ['Wedding Rings'],
+            'for_her' => ['Wedding Rings'],
+            'kids'    => ['Wedding Rings'],
+        ],
+        'collections' => [
+            'for_him' => ['Rings'],
+            'for_her' => ['Bands', 'Bangles', 'Beaded Necklaces', 'Rings'],
+            'kids'    => ['Rings', 'Bands', 'Bangles'],
+        ],
+        'gifts' => [
+            'for_him' => ['Rings'],
+            'for_her' => ['Hoop Earrings', 'Drop Earrings', 'Bangles', 'Rings'],
+            'kids'    => ['Drop Earrings', 'Bangles', 'Rings'],
+        ],
+    ];
+
+    public function byGender(Request $request): JsonResponse
     {
-        
+        $metalType = strtolower(trim($request->input('metal_type', '')));
+        $gender    = strtolower(trim($request->input('gender', '')));
+
+        if ($metalType === '') {
+            return response()->json(['success' => false, 'message' => 'metal_type is required.'], 422);
+        }
+
+        if ($gender === '') {
+            return response()->json(['success' => false, 'message' => 'gender is required (for_him, for_her, kids).'], 422);
+        }
+
+        if (!array_key_exists($metalType, self::GENDER_CATEGORY_MAP)) {
+            return response()->json(['success' => false, 'message' => "Unknown metal_type \"{$metalType}\"."], 422);
+        }
+
+        if (!array_key_exists($gender, self::GENDER_CATEGORY_MAP[$metalType])) {
+            return response()->json(['success' => false, 'message' => "Unknown gender \"{$gender}\". Use for_him, for_her, or kids."], 422);
+        }
+
+        $minPrice = $request->filled('min_price') ? (float) $request->input('min_price') : null;
+        $maxPrice = $request->filled('max_price') ? (float) $request->input('max_price') : null;
+
+        $data = collect(self::GENDER_CATEGORY_MAP[$metalType][$gender])->map(function (string $cat) use ($minPrice, $maxPrice) {
+            $query = ProductDetail::where('published', 1);
+
+            if ($cat === 'Rings') {
+                $query->whereIn('categories', self::GOLD_RING_SUBCATEGORIES);
+            } elseif ($cat === 'Earrings') {
+                $query->whereIn('categories', self::GOLD_EARRING_SUBCATEGORIES);
+            } else {
+                $query->where('categories', $cat);
+            }
+
+            if ($minPrice !== null) {
+                $query->where('regular_price', '>=', $minPrice);
+            }
+
+            if ($maxPrice !== null) {
+                $query->where('regular_price', '<=', $maxPrice);
+            }
+
+            $products = $query->orderBy('regular_price')->get();
+
+            return [
+                'category'      => $cat,
+                'slug'          => \Illuminate\Support\Str::slug($cat),
+                'product_count' => $products->count(),
+                'products'      => $products,
+            ];
+        })->filter(fn ($item) => $item['product_count'] > 0)->values();
+
+        return response()->json([
+            'success'          => true,
+            'metal_type'       => $metalType,
+            'gender'           => $gender,
+            'total_categories' => $data->count(),
+            'total_products'   => $data->sum('product_count'),
+            'data'             => $data,
+        ]);
+    }
+
+    public function byMetalAndPrice(Request $request): JsonResponse
+    {
         $metalType = strtolower(trim($request->input('metal_type', '')));
 
         if ($metalType === '') {
             return response()->json(['success' => false, 'message' => 'metal_type is required.'], 422);
         }
 
+        if (!array_key_exists($metalType, self::METAL_CATEGORY_MAP)) {
+            return response()->json(['success' => false, 'message' => "Unknown metal_type \"{$metalType}\"."], 422);
+        }
+
+        $minPrice = $request->filled('min_price') ? (float) $request->input('min_price') : null;
+        $maxPrice = $request->filled('max_price') ? (float) $request->input('max_price') : null;
+
+        $data = collect(self::METAL_CATEGORY_MAP[$metalType])->map(function (string $cat) use ($minPrice, $maxPrice) {
+            // "Rings" is a virtual aggregate across all ring subcategories
+            $query = ProductDetail::where('published', 1);
+
+            if ($cat === 'Rings') {
+                $query->whereIn('categories', self::GOLD_RING_SUBCATEGORIES);
+            } else {
+                $query->where('categories', $cat);
+            }
+
+            if ($minPrice !== null) {
+                $query->where('regular_price', '>=', $minPrice);
+            }
+
+            if ($maxPrice !== null) {
+                $query->where('regular_price', '<=', $maxPrice);
+            }
+
+            $products = $query->orderBy('regular_price')->get();
+
+            return [
+                'category'      => $cat,
+                'slug'          => \Illuminate\Support\Str::slug($cat),
+                'product_count' => $products->count(),
+                'products'      => $products,
+            ];
+        })->filter(fn ($item) => $item['product_count'] > 0)->values();
+
+        return response()->json([
+            'success'          => true,
+            'metal_type'       => $metalType,
+            'total_categories' => $data->count(),
+            'total_products'   => $data->sum('product_count'),
+            'data'             => $data,
+        ]);
+    }
+
+    private const OFFERS_CATEGORIES = ['Rings', 'Earrings', 'Lockets', 'Bands'];
+
+    public function offers(Request $request): JsonResponse
+    {
+        $minPrice = $request->filled('min_price') ? (float) $request->input('min_price') : null;
+        $maxPrice = $request->filled('max_price') ? (float) $request->input('max_price') : null;
+
+        $data = collect(self::OFFERS_CATEGORIES)->map(function (string $cat) use ($minPrice, $maxPrice) {
+            $query = ProductDetail::where('published', 1);
+
+            if ($cat === 'Rings') {
+                $query->whereIn('categories', self::GOLD_RING_SUBCATEGORIES);
+            } elseif ($cat === 'Earrings') {
+                $query->whereIn('categories', self::GOLD_EARRING_SUBCATEGORIES);
+            } else {
+                $query->where('categories', $cat);
+            }
+
+            if ($minPrice !== null) {
+                $query->where('regular_price', '>=', $minPrice);
+            }
+
+            if ($maxPrice !== null) {
+                $query->where('regular_price', '<=', $maxPrice);
+            }
+
+            $products = $query->orderBy('regular_price')->get();
+
+            return [
+                'category'      => $cat,
+                'slug'          => \Illuminate\Support\Str::slug($cat),
+                'product_count' => $products->count(),
+                'products'      => $products,
+            ];
+        })->filter(fn ($item) => $item['product_count'] > 0)->values();
+
+        return response()->json([
+            'success'          => true,
+            'total_categories' => $data->count(),
+            'total_products'   => $data->sum('product_count'),
+            'data'             => $data,
+        ]);
+    }
+
+    public function categoriesByMetal(Request $request): JsonResponse
+    {
+        $metalType = strtolower(trim($request->input('metal_type', '')));
+
+        if ($metalType === '') {
+            return response()->json(['success' => false, 'message' => 'metal_type is required.'], 422);
+        }
+
+        if ($metalType === 'gold') {
+            return $this->goldCategories();
+        }
+
+        if ($metalType === 'rings') {
+            $categories = ProductDetail::whereIn('categories', self::GOLD_RING_SUBCATEGORIES)
+                ->where('categories', '!=', '')
+                ->selectRaw('categories, MIN(images) as image, COUNT(*) as product_count')
+                ->groupBy('categories')
+                ->orderByRaw('FIELD(categories, ' . implode(',', array_fill(0, count(self::GOLD_RING_SUBCATEGORIES), '?')) . ')', self::GOLD_RING_SUBCATEGORIES)
+                ->get()
+                ->map(fn ($row) => [
+                    'categories'    => $row->categories,
+                    'slug'          => \Illuminate\Support\Str::slug($row->categories),
+                    'image'         => $row->image,
+                    'product_count' => $row->product_count,
+                ]);
+
+            return response()->json([
+                'success'    => true,
+                'metal_type' => 'rings',
+                'categories' => $categories,
+            ]);
+        }
+
         // Keywords mapped to LIKE patterns searched in the categories column.
         $categoryKeywordMap = [
-            'rings'    => ['%ring%', '%rings%'],
             'necklaces' => ['%necklace%', '%necklaces%'],
-            'wedding'  => ['%wedding%'],
+            'wedding'   => ['%wedding%'],
             'earrings'  => ['%earrings%'],
         ];
 
@@ -186,12 +451,79 @@ class ProductDetailApiController extends Controller
             $query->where('meta_metal', $metalType);
         }
 
-        $categories = $query->get();
+        $categories = $query->get()
+                    ->map(fn ($row) => [
+                                'categories'    => $row->categories,
+                                'slug'          => \Illuminate\Support\Str::slug($row->categories),
+                                'image'         => $row->image,
+                                'product_count' => $row->product_count,
+                            ]);
 
         return response()->json([
             'success'    => true,
             'metal_type' => $metalType,
             'categories' => $categories,
+        ]);
+    }
+
+    private function goldCategories(): JsonResponse
+    {
+        $data = collect();
+
+        foreach (self::GOLD_SINGLE_CATEGORIES as $cat) {
+            $row = ProductDetail::where('published', 1)
+                // ->where('meta_metal', 'gold')
+                ->where('categories', $cat)
+                ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
+                ->first();
+
+            if ($row && $row->product_count > 0) {
+                $data->push([
+                    'categories'    => $cat,
+                    'slug'          => \Illuminate\Support\Str::slug($cat),
+                    'image'         => $row->image,
+                    'product_count' => $row->product_count,
+                ]);
+            }
+        }
+
+        // Earrings: aggregate across Dangle, Drop, Hoop
+        $earringRow = ProductDetail::where('published', 1)
+            // ->where('meta_metal', 'gold')
+            ->whereIn('categories', self::GOLD_EARRING_SUBCATEGORIES)
+            ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
+            ->first();
+
+        if ($earringRow && $earringRow->product_count > 0) {
+            $data->push([
+                'categories'    => 'Earrings',
+                'slug'          => 'earrings',
+                'image'         => $earringRow->image,
+                'product_count' => $earringRow->product_count,
+                'subcategories' => self::GOLD_EARRING_SUBCATEGORIES,
+            ]);
+        }
+
+        // Rings: aggregate across all ring subcategories
+        $ringRow = ProductDetail::where('published', 1)
+            // ->where('meta_metal', 'gold')
+            ->whereIn('categories', self::GOLD_RING_SUBCATEGORIES)
+            ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
+            ->first();
+
+        if ($ringRow && $ringRow->product_count > 0) {
+            $data->push([
+                'categories'    => 'Rings',
+                'slug'          => 'rings',
+                'image'         => $ringRow->image,
+                'product_count' => $ringRow->product_count,
+            ]);
+        }
+
+        return response()->json([
+            'success'    => true,
+            'metal_type' => 'gold',
+            'categories' => $data->values(),
         ]);
     }
 

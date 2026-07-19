@@ -6,12 +6,15 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductDetailController;
 use App\Http\Controllers\SubcategoryController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Api\Admin\GoldPriceController;
 
 
 Route::get('/', fn() => redirect('/admin/dashboard'));
 
-
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('gold-price',  [GoldPriceController::class, 'index'])->name('admin.gold-price.index');
+    Route::post('gold-price', [GoldPriceController::class, 'update'])->name('admin.gold-price.update');
+});
 
 Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])

@@ -8,7 +8,6 @@ use App\Http\Controllers\Api\ProductDetailApiController;
 use App\Http\Controllers\Api\ProductDetailCategoryApiController;
 use App\Http\Controllers\Api\UserAuthController;
 use App\Http\Controllers\Api\ProductTypeApiController;
-
 use App\Http\Controllers\ProductDetailImportController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,9 +50,6 @@ Route::get('/jewellery/all',                   [ProductDetailApiController::clas
 Route::get('/jewellery/browse',                [ProductDetailApiController::class, 'browse']);
 Route::get('/jewellery/search',                [ProductDetailApiController::class, 'search']);
 Route::get('/jewellery/categories-by-metal',   [ProductDetailApiController::class, 'categoriesByMetal']);
-Route::get('/jewellery/by-price',              [ProductDetailApiController::class, 'byMetalAndPrice']);
-Route::get('/jewellery/by-gender',             [ProductDetailApiController::class, 'byGender']);
-Route::get('/jewellery/offers',                [ProductDetailApiController::class, 'offers']);
 Route::get('/jewellery/{id}',                  [ProductDetailApiController::class, 'show']);
 
 // ── Jewellery taxonomy navigation ────────────────────────────────────────
@@ -118,6 +114,3 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('categories', CategoryController::class);
     });
 });
-
-
-

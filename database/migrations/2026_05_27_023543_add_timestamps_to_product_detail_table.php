@@ -13,7 +13,7 @@ return new class extends Migration
 {
     Schema::table('product_detail', function (Blueprint $table) {
         if (!Schema::hasColumn('product_detail', 'created_at')) {
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
         }
         if (!Schema::hasColumn('product_detail', 'imported_at')) {
             $table->timestamp('imported_at')->nullable();
@@ -23,9 +23,12 @@ return new class extends Migration
 
 public function down(): void
 {
-    Schema::table('product_detail', function (Blueprint $table) {
-        $table->dropTimestamps();
+    if (Schema::hasColumn('product_detail', 'created_at')) {
+        $table->dropColumn('created_at');
+    }
+
+    if (Schema::hasColumn('product_detail', 'imported_at')) {
         $table->dropColumn('imported_at');
-    });
+    }
 }
 };

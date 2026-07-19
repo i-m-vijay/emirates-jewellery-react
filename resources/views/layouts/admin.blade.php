@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Panel') - Laravel Admin</title>
+    <title>@yield('title', 'Admin Panel') - Emirates</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('emirates-logo.svg') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -11,8 +12,12 @@
     <div class="flex h-screen">
         <!-- Sidebar -->
         <div class="w-64 bg-gray-900 text-white">
-            <div class="p-6 border-b border-gray-800">
-                <h1 class="text-2xl font-bold">Admin Panel</h1>
+            <div class="p-5 border-b border-gray-800 flex items-center gap-3">
+                <img src="{{ asset('emirates-logo.svg') }}" alt="Emirates Logo" class="w-10 h-10 rounded-lg">
+                <div>
+                    <p class="text-xs text-gray-400 leading-none">Admin Panel</p>
+                    <h1 class="text-base font-bold leading-tight">Emirates</h1>
+                </div>
             </div>
 
             <nav class="mt-6">
@@ -30,6 +35,11 @@
                    class="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.product-details.*') ? 'bg-gray-800 text-white' : '' }}">
                     <i class="fas fa-gem mr-3"></i>
                     Product Details
+                </a>
+                <a href="{{ route('admin.gold-price.index') }}"
+                   class="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.gold-price.*') ? 'bg-gray-800 text-white' : '' }}">
+                    <i class="fas fa-coins mr-3"></i>
+                    Gold Price
                 </a>
                 <a href="{{ route('admin.categories.index') }}"
                    class="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 transition {{ request()->routeIs('admin.categories.*') ? 'bg-gray-800 text-white' : '' }}">

@@ -60,20 +60,13 @@
                 </button>
             </form>
 
-            <div class="mt-6 text-center">
-                <p class="text-gray-600 text-sm">Don't have an account? 
-                    <a href="{{ route('register') }}" class="text-blue-600 hover:underline font-medium">Sign up here</a>
-                </p>
-            </div>
+            <!--<div class="mt-6 text-center">-->
+            <!--    <p class="text-gray-600 text-sm">Don't have an account? -->
+            <!--        <a href="{{ route('register') }}" class="text-blue-600 hover:underline font-medium">Sign up here</a>-->
+            <!--    </p>-->
+            <!--</div>-->
 
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p class="text-xs text-gray-600">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <strong>Demo Credentials:</strong><br>
-                    Email: admin@admin.com<br>
-                    Password: password
-                </p>
-            </div>
+           
         </div>
     </div>
 </body>
