@@ -2,14 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, ArrowUpDown, ChevronRight, Search } from 'lucide-react';
+import Pagination from '../components/Pagination';
 import { fetchSearchResults } from '../api/categoryApi';
 import { useProduct } from '../context/ProductContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
 import { useAuth } from '../context/AuthContext';
+import { formatAmount } from '../utils';
 
-const PER_PAGE = 20;
+const PER_PAGE = 12;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -103,18 +105,18 @@ function ProductCard({ product, onClick }) {
         <div className="product-card__pricing">
           {hasDiscount ? (
             <>
-              <span className="product-card__sale-price">${parseFloat(product.sale_price).toLocaleString()}</span>
-              <span className="product-card__regular-price struck">${parseFloat(product.regular_price).toLocaleString()}</span>
+              <span className="product-card__sale-price">${formatAmount(product.sale_price)}</span>
+              <span className="product-card__regular-price struck">${formatAmount(product.regular_price)}</span>
             </>
           ) : product.regular_price ? (
-            <span className="product-card__sale-price">${parseFloat(product.regular_price).toLocaleString()}</span>
+            <span className="product-card__sale-price">${formatAmount(product.regular_price)}</span>
           ) : (
             <span className="product-card__price-na">Price on request</span>
           )}
         </div>
         {discountPct && <p className="product-card__offer-label">{discountPct}% Off on Making Value</p>}
         {product.description && <p className="product-card__desc">{product.description}</p>}
-        <button
+        {product.regular_price && <button
           className={`product-card__cart-btn${inCart ? ' in-cart' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -125,7 +127,7 @@ function ProductCard({ product, onClick }) {
         >
           <ShoppingBag size={14} />
           {inCart ? 'Added to Cart ✓' : 'Add to Cart'}
-        </button>
+        </button>}
       </div>
     </motion.div>
   );
@@ -140,8 +142,6 @@ export default function SearchResultsPage() {
   const [products, setProducts]       = useState([]);
   const [total, setTotal]             = useState(null);
   const [page, setPage]               = useState(1);
-  const [pagesLoaded, setPagesLoaded] = useState(0);
-  const [hasMore, setHasMore]         = useState(false);
   const [loading, setLoading]         = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError]             = useState(null);
@@ -162,19 +162,13 @@ export default function SearchResultsPage() {
           if (list.length === 0) { setError(`No results found for "${q}".`); return; }
           setProducts(list);
           setCategoryProducts(list);
-          setPagesLoaded(1);
           if (resTotal != null) setTotal(resTotal);
         } else {
-          setProducts((prev) => {
-            const updated = [...prev, ...list];
-            setCategoryProducts(updated);
-            return updated;
-          });
-          setPagesLoaded((p) => p + 1);
+          setProducts(list);
+          setCategoryProducts(list);
         }
 
         setPage(pageNum);
-        setHasMore(more);
       })
       .catch(() => { if (isInitial) setError('Failed to load results. Please try again.'); })
       .finally(() => {
@@ -187,25 +181,12 @@ export default function SearchResultsPage() {
   useEffect(() => {
     if (!query.trim()) return;
     setPage(1);
-    setPagesLoaded(0);
     setProducts([]);
     setTotal(null);
-    setHasMore(false);
     loadPage(query, 1, true);
   }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleViewMore() { loadPage(query, page + 1, false); }
-
-  function handleViewLess() {
-    setProducts((prev) => {
-      const trimmed = prev.slice(0, prev.length - PER_PAGE);
-      setCategoryProducts(trimmed);
-      return trimmed;
-    });
-    setPage((p) => p - 1);
-    setPagesLoaded((p) => p - 1);
-    setHasMore(true);
-  }
 
   const handleProductClick = (product) => {
     setSelectedProduct(product);
@@ -226,9 +207,9 @@ export default function SearchResultsPage() {
       <div className="cat-page__header">
         <h1 className="cat-page__title">
           {query ? `Results for "${query}"` : 'Search'}
-          {!loading && (total ?? products.length) > 0 && (
+          {/* {!loading && (total ?? products.length) > 0 && (
             <span className="cat-page__count"> ({total ?? products.length} Designs)</span>
-          )}
+          )} */}
         </h1>
 
         {products.length > 0 && (
@@ -288,22 +269,12 @@ export default function SearchResultsPage() {
             ))}
           </div>
 
-          <div className="cat-page__view-more-wrap">
-            {pagesLoaded > 1 && (
-              <button className="cat-page__view-less-btn" onClick={handleViewLess}>
-                View Less
-              </button>
-            )}
-            {hasMore && (
-              <button
-                className="cat-page__view-more-btn"
-                onClick={handleViewMore}
-                disabled={loadingMore}
-              >
-                {loadingMore ? 'Loading…' : `View More (Page ${page + 1})`}
-              </button>
-            )}
-          </div>
+          <Pagination
+            page={page}
+            totalPages={total != null ? Math.max(1, Math.ceil(total / PER_PAGE)) : 1}
+            onPageChange={(p) => loadPage(query, p, false)}
+            loading={loadingMore}
+          />
         </>
       )}
     </div>

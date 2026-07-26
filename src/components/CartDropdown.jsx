@@ -1,10 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
-function fmt(n) {
-  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+import { formatAmount } from '../utils';
 
 function CartDropdown() {
   const { items, count, subtotal, removeItem } = useCart();
@@ -13,7 +10,7 @@ function CartDropdown() {
     <div className="cart-dropdown">
       <div className="cart-dropdown__header">
         <span>{count} {count === 1 ? 'Item' : 'Items'}</span>
-        <span>Subtotal: ${fmt(subtotal)}</span>
+        <span>Subtotal: ${formatAmount(subtotal)}</span>
       </div>
 
       {items.length === 0 ? (
@@ -33,7 +30,7 @@ function CartDropdown() {
                 <div className="cart-dropdown__meta">
                   <p className="cart-dropdown__name">{product.name}</p>
                   <p className="cart-dropdown__qty">Qty: {qty}</p>
-                  <p className="cart-dropdown__price">${fmt(price * qty)}</p>
+                  <p className="cart-dropdown__price">${formatAmount(price * qty)}</p>
                 </div>
                 <button
                   className="cart-dropdown__del"

@@ -182,7 +182,7 @@ export default function OffcanvasSubDrawer({ item, metalType, staticItems, onBac
       <hr className="oc-sub__divider" />
 
       {/* ── Shop For ── */}
-      <section className="oc-sub__section">
+      {/* <section className="oc-sub__section">
         <p className="oc-sub__section-title">Shop for</p>
         <div className="oc-sub__grid oc-sub__grid--for">
           {SHOP_FOR.map((sf, i) => {
@@ -195,7 +195,7 @@ export default function OffcanvasSubDrawer({ item, metalType, staticItems, onBac
             );
           })}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

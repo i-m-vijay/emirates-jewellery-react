@@ -192,11 +192,12 @@ function Home() {
         <img src={`${IMAGE_PATH}heading-vector.svg`} alt="" className="heading-vector" loading="lazy" />
         <SectionTitle title="Shop By Category" subtitle="Explore our finest jewellery range" />
         <div className="grid grid-3">
-          {catDisplay.map((item) => (
-            <Link key={item.title} to={`/category/${item.slug}`} className="category-card-link">
+          {catDisplay.map((item, index) => {
+            const shouldCenter = catDisplay.length % 3 === 1 && index === catDisplay.length - 1;
+
+            return (<Link key={item.title} to={`/category/${item.slug}`} className={`category-card-link ${shouldCenter ? "col-start-2" : ""}`}>
               <ImageCard title={item.title} image={item.image} />
-            </Link>
-          ))}
+            </Link>)})}
         </div>
         {filteredForShopByCat.length > INITIAL_CATS_VISIBLE && (
           <button className="outline-btn" onClick={() => setShowAllCats(!showAllCats)}>

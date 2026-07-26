@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, ArrowUpDown, ChevronRight } from 'lucide-react';
+import Pagination from '../components/Pagination';
 import { fetchJewelleryByPrice } from '../api/categoryApi';
 import { STORAGE_URL } from '../api/apiUrls';
 import { useProduct } from '../context/ProductContext';
@@ -9,6 +10,9 @@ import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
 import { useAuth } from '../context/AuthContext';
+import { formatAmount } from '../utils';
+
+const PER_PAGE = 12;
 
 const SORT_OPTIONS = [
   { label: 'Position',           value: 'default' },
@@ -117,18 +121,18 @@ function ProductCard({ product, onClick }) {
         <div className="product-card__pricing">
           {hasDiscount ? (
             <>
-              <span className="product-card__sale-price">${parseFloat(product.sale_price).toLocaleString()}</span>
-              <span className="product-card__regular-price struck">${parseFloat(product.regular_price).toLocaleString()}</span>
+              <span className="product-card__sale-price">${formatAmount(product.sale_price)}</span>
+              <span className="product-card__regular-price struck">${formatAmount(product.regular_price)}</span>
             </>
           ) : product.regular_price ? (
-            <span className="product-card__sale-price">${parseFloat(product.regular_price).toLocaleString()}</span>
+            <span className="product-card__sale-price">${formatAmount(product.regular_price)}</span>
           ) : (
             <span className="product-card__price-na">Price on request</span>
           )}
         </div>
         {discountPct && <p className="product-card__offer-label">{discountPct}% Off on Making Value</p>}
         {product.description && <p className="product-card__desc">{product.description}</p>}
-        <button
+        {product.regular_price && <button
           className={`product-card__cart-btn${inCart ? ' in-cart' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -139,7 +143,7 @@ function ProductCard({ product, onClick }) {
         >
           <ShoppingBag size={14} />
           {inCart ? 'Added to Cart ✓' : 'Add to Cart'}
-        </button>
+        </button>}
       </div>
     </motion.div>
   );
@@ -160,9 +164,9 @@ export default function PriceFilteredPage() {
   const [error, setError]               = useState(null);
   const [sort, setSort]                 = useState('default');
   const [sortOpen, setSortOpen]         = useState(false);
-  const [visibleCount, setVisibleCount] = useState(20);
+  const [page, setPage]                 = useState(1);
 
-  useEffect(() => { setVisibleCount(20); }, [metalType, rangeKey]);
+  useEffect(() => { setPage(1); }, [metalType, rangeKey]);
 
   useEffect(() => {
     let stale = false;
@@ -201,8 +205,9 @@ export default function PriceFilteredPage() {
   };
 
   const sorted  = sortProducts(products, sort);
-  const visible = sorted.slice(0, visibleCount);
-  const hasMore = visibleCount < sorted.length;
+  const totalItems = total ?? products.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PER_PAGE));
+  const visible = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="cat-page">
@@ -221,9 +226,9 @@ export default function PriceFilteredPage() {
       <div className="cat-page__header">
         <h1 className="cat-page__title">
           {label}
-          {!loading && (total ?? products.length) > 0 && (
+          {/* {!loading && (total ?? products.length) > 0 && (
             <span className="cat-page__count"> ({total ?? products.length} Designs)</span>
-          )}
+          )} */}
         </h1>
 
         <div className="cat-page__controls">
@@ -277,16 +282,7 @@ export default function PriceFilteredPage() {
               />
             ))}
           </div>
-          {hasMore && (
-            <div className="cat-page__view-more-wrap">
-              <button
-                className="cat-page__view-more-btn"
-                onClick={() => setVisibleCount((c) => c + 20)}
-              >
-                View More
-              </button>
-            </div>
-          )}
+          <Pagination page={page} totalPages={totalPages} onPageChange={(p) => setPage(p)} />
         </>
       )}
     </div>

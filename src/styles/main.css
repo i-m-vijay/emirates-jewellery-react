@@ -859,6 +859,10 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.col-start-2 {
+  grid-column-start: 2;
+}
+
 .image-card {
   background: #fff;
   overflow: hidden;
@@ -1690,6 +1694,50 @@ button {
   transform: translateY(-1px);
 }
 
+.cat-page__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 0 48px;
+}
+
+.cat-page__pagination-btn {
+  background: #fff;
+  color: #8b1f1f;
+  border: 1px solid #8b1f1f;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.cat-page__pagination-btn:hover:not(:disabled) {
+  background: #8b1f1f;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.cat-page__pagination-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cat-page__pagination-btn--active {
+  background: #8b1f1f;
+  color: #fff;
+}
+
+.cat-page__pagination-ellipsis {
+  color: #7a6358;
+  font-size: 15px;
+  padding: 0 8px;
+}
+
 /* ── Product card ─────────────────────────────────── */
 .product-card {
   background: #fff;
@@ -1793,10 +1841,12 @@ button {
   line-height: 1.45;
   margin-bottom: 8px;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-weight: 700;
+  min-height: 38px;
 }
 
 .product-card__pricing {
@@ -1837,7 +1887,8 @@ button {
   line-height: 1.5;
   margin-top: 7px;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -3906,6 +3957,12 @@ button {
   color: #5c514d;
 }
 
+@media (width <= 900px) {
+  .shop-by-cat  .grid-3 {
+    display: block;
+  }
+}
+
 @media (max-width: 860px) {
   .policy-hero { grid-template-columns: 1fr; }
   .policy-hero__img-wrap img { height: 260px; }
@@ -3913,6 +3970,12 @@ button {
 
 @media (max-width: 480px) {
   .policy-info-table__row { grid-template-columns: 110px 1fr; }
+}
+
+@media (max-width: 560px) {
+  .auth-dropdown {
+      width: 280px;
+  }
 }
 
 @media (max-width: 640px) {

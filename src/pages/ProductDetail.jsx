@@ -11,6 +11,7 @@ import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
 import { useAuth } from '../context/AuthContext';
 import { fetchProductDetail } from '../api/productApi';
+import { formatAmount } from '../utils';
 
 function parseImages(images) {
   if (!images) return [];
@@ -166,11 +167,11 @@ function SimilarCard({ product, onClick }) {
       <div className="pdp__similar-info">
         {hasDiscount ? (
           <p className="pdp__similar-price">
-            <strong>${parseFloat(product.sale_price).toLocaleString()}</strong>
-            <span className="pdp__similar-struck">${parseFloat(product.regular_price).toLocaleString()}</span>
+            <strong>${formatAmount(product.sale_price)}</strong>
+            <span className="pdp__similar-struck">${formatAmount(product.regular_price)}</span>
           </p>
         ) : product.regular_price ? (
-          <p className="pdp__similar-price"><strong>${parseFloat(product.regular_price).toLocaleString()}</strong></p>
+          <p className="pdp__similar-price"><strong>${formatAmount(product.regular_price)}</strong></p>
         ) : (
           <p className="pdp__similar-price"><em>Price on request</em></p>
         )}
@@ -406,7 +407,7 @@ function ProductDetail() {
           {!product.in_stock && <p className="pdp__oos">Currently Out of Stock</p>}
 
           <div className="pdp__actions">
-            <button
+            {product.regular_price && <button
               className={`pdp__add-cart${isInCart(product.record_id) ? ' in-cart' : ''}`}
               disabled={!product.in_stock}
               onClick={() => {
@@ -416,7 +417,7 @@ function ProductDetail() {
             >
               <ShoppingBag size={18} />
               {isInCart(product.record_id) ? 'Added to Cart ✓' : 'Add to Cart'}
-            </button>
+            </button>}
             <button
               className={`pdp__wish-btn ${isInWishlist(product.record_id) ? 'active' : ''}`}
               onClick={() => guard(() => toggleItem(product))}
@@ -443,16 +444,16 @@ function ProductDetail() {
       <div id="pdp-details" className="pdp__section">
         <Accordion title="Product Details">
           <div className="pdp__details-grid">
-            <div className="pdp__detail-panel">
+            {/* <div className="pdp__detail-panel">
               <h4>Basic Information</h4>
               <DetailRow label="Metal"            value={product.meta_gold_type} />
               <DetailRow label="Metal Purity"     value={product.meta_gold_purity} />
               <DetailRow label="Gross Weight (g)" value={product.meta_gold_weight_grams} />
               <DetailRow label="Category"         value={product.categories} />
               <DetailRow label="In Stock"         value={product.in_stock ? 'Yes' : 'No'} />
-            </div>
+            </div> */}
 
-            <div className="pdp__detail-panel">
+            {/* <div className="pdp__detail-panel">
               <h4>Diamond Details</h4>
               <DetailRow label="Diamond Clarity" value={product.meta_diamond_clarity} />
               <DetailRow label="Diamond Color"   value={product.meta_diamond_color} />
@@ -460,7 +461,7 @@ function ProductDetail() {
                 label="Diamond Weight"
                 value={product.meta_total_diamond_weight ? `${product.meta_total_diamond_weight} ct` : null}
               />
-            </div>
+            </div> */}
 
             <div className="pdp__detail-panel">
               <h4>Stone Information</h4>
@@ -474,10 +475,10 @@ function ProductDetail() {
             </div>
           </div>
 
-          <div className="pdp__return-policy">
+          {/* <div className="pdp__return-policy">
             <h4 className="pdp__return-title">Return Policy</h4>
             <DetailRow label="Return" value="15 Days Exchange" />
-          </div>
+          </div> */}
         </Accordion>
       </div>
 
@@ -580,7 +581,7 @@ function ProductDetail() {
       )}
 
       {/* ── Product Review ── */}
-      <div className="pdp__section">
+      {/* <div className="pdp__section">
         <h2 className="pdp__review-heading">Product Review</h2>
         <div className="pdp__review-grid">
           <div className="pdp__review-rating">
@@ -610,7 +611,7 @@ function ProductDetail() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

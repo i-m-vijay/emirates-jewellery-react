@@ -88,7 +88,7 @@ function Wishlist() {
                         <ShoppingCart size={14} /> View in Cart
                       </button>
                     ) : (
-                      <button
+                      product.regular_price && <button
                         className="wishlist-item__btn wishlist-item__btn--add"
                         onClick={() => handleAddToCart(product)}
                       >

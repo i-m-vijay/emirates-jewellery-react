@@ -93,7 +93,7 @@ const NAV_ACCENTS = {
 const NAV_PROMOS = {
   Gold:        `${IMAGE_PATH}luxury-jewellery.jpg`,
   Diamond:     `${IMAGE_PATH}best-seller-3.jpg`,
-  Rings:       `${IMAGE_PATH}rings.jpg`,
+  Rings:       `${IMAGE_PATH}ring.jpg`,
   Earrings:    `${IMAGE_PATH}earrings.jpg`,
   Necklaces:   `${IMAGE_PATH}beaded-necklace.jpg`,
   Wedding:     `${IMAGE_PATH}bridal-2.jpg`,
@@ -260,7 +260,7 @@ export default function JewelleryHoverModal({ item, onMouseEnter, onMouseLeave, 
       </div>
 
       {/* ── Col 3: Shop For ── */}
-      <div className="jwellery-mega__col">
+      {/* <div className="jwellery-mega__col">
         <p className="jwellery-mega__title" style={{ '--mega-accent': accent }}>Shop For</p>
         <ul className="jwellery-mega__list">
           {SHOP_FOR.map((sf, i) => {
@@ -279,7 +279,7 @@ export default function JewelleryHoverModal({ item, onMouseEnter, onMouseLeave, 
             );
           })}
         </ul>
-      </div>
+      </div> */}
 
       {/* ── Col 4: Promo image ── */}
       <div className="jwellery-mega__col jwellery-mega__col--promo">

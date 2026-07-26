@@ -3,13 +3,15 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, ShoppingBag, ArrowUpDown, ChevronRight } from 'lucide-react';
 import { fetchAllJewellery } from '../api/categoryApi';
+import Pagination from '../components/Pagination';
 import { useProduct } from '../context/ProductContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuthGuard } from '../guards/AuthGuard';
 import { useAuth } from '../context/AuthContext';
+import { formatAmount } from '../utils';
 
-const PER_PAGE = 50;
+const PER_PAGE = 12;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -111,18 +113,18 @@ function ProductCard({ product, onClick }) {
         <div className="product-card__pricing">
           {hasDiscount ? (
             <>
-              <span className="product-card__sale-price">${parseFloat(product.sale_price).toLocaleString()}</span>
-              <span className="product-card__regular-price struck">${parseFloat(product.regular_price).toLocaleString()}</span>
+              <span className="product-card__sale-price">${formatAmount(product.sale_price)}</span>
+              <span className="product-card__regular-price struck">${formatAmount(product.regular_price)}</span>
             </>
           ) : product.regular_price ? (
-            <span className="product-card__sale-price">${parseFloat(product.regular_price).toLocaleString()}</span>
+            <span className="product-card__sale-price">${formatAmount(product.regular_price)}</span>
           ) : (
             <span className="product-card__price-na">Price on request</span>
           )}
         </div>
         {discountPct && <p className="product-card__offer-label">{discountPct}% Off on Making Value</p>}
         {product.description && <p className="product-card__desc">{product.description}</p>}
-        <button
+        {product.regular_price && <button
           className={`product-card__cart-btn${inCart ? ' in-cart' : ''}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -133,7 +135,7 @@ function ProductCard({ product, onClick }) {
         >
           <ShoppingBag size={14} />
           {inCart ? 'Added to Cart ✓' : 'Add to Cart'}
-        </button>
+        </button>}
       </div>
     </motion.div>
   );
@@ -147,76 +149,67 @@ export default function AllJewelleryPage() {
 
   const [products, setProducts]       = useState([]);
   const [total, setTotal]             = useState(null);
-  const [page, setPage]               = useState(1);        // last successfully fetched page
-  const [pagesLoaded, setPagesLoaded] = useState(0);        // how many pages are currently shown
-  const [hasMore, setHasMore]         = useState(false);
-  const [loading, setLoading]         = useState(true);     // initial skeleton
-  const [loadingMore, setLoadingMore] = useState(false);    // View More spinner
+  const [page, setPage]               = useState(1);
+  const [loading, setLoading]         = useState(true);
+  const [loadingPage, setLoadingPage] = useState(false);
   const [error, setError]             = useState(null);
   const [sort, setSort]               = useState('default');
   const [sortOpen, setSortOpen]       = useState(false);
 
-  // ── fetch a specific page and either replace or append ──────────────────────
+  // ── fetch a specific page and replace contents ─────────────────────────────
   function loadPage(pageNum, isInitial) {
-    if (isInitial) { setLoading(true); setError(null); }
-    else           { setLoadingMore(true); }
+    if (isInitial) {
+      setLoading(true);
+      setError(null);
+    } else {
+      setLoadingPage(true);
+      setError(null);
+    }
 
     fetchAllJewellery(pageNum, PER_PAGE, jewelleryType)
       .then((res) => {
         const { list: rawList, hasMore: more, total: resTotal } = extractPageData(res, pageNum);
         const list = shuffle(rawList.filter((p) => getFirstImage(p.images)));
 
-        if (isInitial) {
-          if (list.length === 0) { setError('No products found.'); return; }
-          setProducts(list);
-          setCategoryProducts(list);
-          setCategoryName('All Jewelry');
-          setCategorySlug('jewellery');
-          setPagesLoaded(1);
+        if (list.length === 0 && pageNum === 1) {
+          setProducts([]);
+          setCategoryProducts([]);
+          setError('No products found.');
+          setPage(1);
+          setHasMore(false);
           if (resTotal != null) setTotal(resTotal);
-        } else {
-          setProducts((prev) => {
-            const updated = [...prev, ...list];
-            setCategoryProducts(updated);
-            return updated;
-          });
-          setPagesLoaded((p) => p + 1);
+          return;
         }
 
+        setProducts(list);
+        setCategoryProducts(list);
+        if (isInitial) {
+          setCategoryName('All Jewelry');
+          setCategorySlug('jewellery');
+        }
+        if (resTotal != null) setTotal(resTotal);
+
         setPage(pageNum);
-        setHasMore(more);
       })
-      .catch(() => { if (isInitial) setError('Failed to load products. Please try again.'); })
+      .catch(() => {
+        setError('Failed to load products. Please try again.');
+      })
       .finally(() => {
         if (isInitial) setLoading(false);
-        else           setLoadingMore(false);
+        else setLoadingPage(false);
       });
   }
 
   useEffect(() => {
     setPage(1);
-    setPagesLoaded(0);
     setProducts([]);
     setTotal(null);
-    setHasMore(false);
     loadPage(1, true);
   }, [jewelleryType]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── View More: fetch next page and append ───────────────────────────────────
-  function handleViewMore() {
-    loadPage(page + 1, false);
-  }
-
-  // ── View Less: drop last 50 from state, no API call needed ──────────────────
-  function handleViewLess() {
-    setProducts((prev) => {
-      const trimmed = prev.slice(0, prev.length - PER_PAGE);
-      setCategoryProducts(trimmed);
-      return trimmed;
-    });
-    setPage((p) => p - 1);
-    setPagesLoaded((p) => p - 1);
-    setHasMore(true); // we just removed a page we had, so more definitely exists
+  function handlePageChange(pageNum) {
+    if (pageNum === page || pageNum < 1) return;
+    loadPage(pageNum, false);
   }
 
   const handleProductClick = (product) => {
@@ -237,9 +230,9 @@ export default function AllJewelleryPage() {
       <div className="cat-page__header">
         <h1 className="cat-page__title">
           {jewelleryType ? `${jewelleryType.charAt(0).toUpperCase() + jewelleryType.slice(1)} Jewelry` : 'All Jewelry'}
-          {!loading && (total ?? products.length) > 0 && (
+          {/* {!loading && (total ?? products.length) > 0 && (
             <span className="cat-page__count"> ({total ?? products.length} Designs)</span>
-          )}
+          )} */}
         </h1>
 
         <div className="cat-page__controls">
@@ -295,23 +288,12 @@ export default function AllJewelleryPage() {
             ))}
           </div>
 
-          {/* ── Pagination controls ── */}
-          <div className="cat-page__view-more-wrap">
-            {pagesLoaded > 1 && (
-              <button className="cat-page__view-less-btn" onClick={handleViewLess}>
-                View Less
-              </button>
-            )}
-            {hasMore && (
-              <button
-                className="cat-page__view-more-btn"
-                onClick={handleViewMore}
-                disabled={loadingMore}
-              >
-                {loadingMore ? 'Loading…' : `View More (Page ${page + 1})`}
-              </button>
-            )}
-          </div>
+          <Pagination
+            page={page}
+            totalPages={total != null ? Math.max(1, Math.ceil(total / PER_PAGE)) : 1}
+            onPageChange={handlePageChange}
+            loading={loadingPage}
+          />
         </>
       )}
     </div>

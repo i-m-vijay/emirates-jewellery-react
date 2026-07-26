@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import './styles/main.css';
 import { AuthProvider } from './context/AuthContext';
@@ -43,6 +43,22 @@ function PageLoader() {
 
 function AppShell() {
   const { pathname } = useLocation();
+
+  // Scroll to top on page reload
+  useEffect(() => {
+    try {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch (e) { try { window.scrollTo(0, 0); } catch (_) { /* ignore */ } }
+  }, [pathname]);
+  
   const isCheckout = pathname.startsWith('/checkout');
 
   return (
