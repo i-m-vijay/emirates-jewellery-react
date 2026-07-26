@@ -530,6 +530,14 @@ foreach ($headerMap as $index => $column) {
             throw new \Exception('Either product_id or SKU is required.');
         }
 
+        if (isset($productData['sku']) && ProductDetail::where('sku', $productData['sku'])->exists()) {
+            throw new \Exception('Duplicate SKU: ' . $productData['sku']);
+        }
+
+        if (isset($productData['product_id']) && ProductDetail::where('product_id', $productData['product_id'])->exists()) {
+            throw new \Exception('Duplicate product_id: ' . $productData['product_id']);
+        }
+
         return $productData;
     }
 

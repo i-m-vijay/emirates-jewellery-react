@@ -137,6 +137,8 @@ class ProductController extends Controller
             // Import products from CSV
             $results = CsvImportService::importProducts($filePath);
 
+            \Log::info(json_encode($results));
+
             // Prepare success/error messages
             $message = "Import completed! ";
             $message .= "{$results['success']} products imported successfully.";

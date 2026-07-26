@@ -36,6 +36,7 @@ class ProductDetailCategoryService
         return collect(self::CURATED_CATEGORIES)->map(function (array $cat) use ($withProducts, $perCategory) {
             $count = ProductDetail::whereIn('categories', $cat['db_categories'])
                 ->where('published', 1)
+                ->where('in_stock', true)
                 ->count();
 
             $entry = [
@@ -61,9 +62,13 @@ class ProductDetailCategoryService
      * @param  int          $perPage
      * @param  int          $page
      */
-    public function forFilter(?string $category, ?string $metalType): array
+    public function forFilter(?string $category, ?string $metalType, bool $excludeOutStocks = true): array
     {
         $query = ProductDetail::where('published', 1);
+
+        if ($excludeOutStocks) {
+            $query->where('in_stock', true);
+        }
 
         if ($category !== null) {
             $query->where('categories', $category);
@@ -91,6 +96,7 @@ class ProductDetailCategoryService
     {
         return ProductDetail::whereIn('categories', $categories)
             ->where('published', 1)
+            ->where('in_stock', true)
             ->limit($limit)
             ->orderBy('record_id')
             ->get()

@@ -28,7 +28,7 @@ class ProductDetailApiController extends Controller
             'jewellery:id,name,slug',
             'collectionCategory:id,name,slug',
             'collectionSubcategory:id,name,slug,collection_category_id',
-        ])->where('published', 1);
+        ])->where('published', 1)->where('in_stock', true);
 
         // ── Legacy filters ─────────────────────────────────────────────
         if ($request->filled('category_id')) {
@@ -45,7 +45,8 @@ class ProductDetailApiController extends Controller
         }
 
         if ($request->filled('product_type_slug')) {
-            $query->whereHas('productType', fn($q) =>
+            $query->whereHas('productType',
+                fn($q) =>
                 $q->where('slug', $request->input('product_type_slug'))
             );
         }
@@ -55,7 +56,8 @@ class ProductDetailApiController extends Controller
         }
 
         if ($request->filled('product_category_slug')) {
-            $query->whereHas('productCategory', fn($q) =>
+            $query->whereHas('productCategory',
+                fn($q) =>
                 $q->where('slug', $request->input('product_category_slug'))
             );
         }
@@ -65,7 +67,8 @@ class ProductDetailApiController extends Controller
         }
 
         if ($request->filled('jewellery_slug')) {
-            $query->whereHas('jewellery', fn($q) =>
+            $query->whereHas('jewellery',
+                fn($q) =>
                 $q->where('slug', $request->input('jewellery_slug'))
             );
         }
@@ -83,9 +86,9 @@ class ProductDetailApiController extends Controller
             $s = $request->input('search');
             $query->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('sku',  'like', "%{$s}%")
-                  ->orWhere('brands', 'like', "%{$s}%")
-                  ->orWhere('short_description', 'like', "%{$s}%");
+                    ->orWhere('sku', 'like', "%{$s}%")
+                    ->orWhere('brands', 'like', "%{$s}%")
+                    ->orWhere('short_description', 'like', "%{$s}%");
             });
         }
 
@@ -101,17 +104,17 @@ class ProductDetailApiController extends Controller
             $query->where('regular_price', '<=', $request->input('max_price'));
         }
 
-        $perPage  = min($request->integer('per_page', 20), 100);
+        $perPage = min($request->integer('per_page', 20), 100);
         $products = $query->latest('record_id')->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'data'    => $products->items(),
+            'data' => $products->items(),
             'pagination' => [
                 'current_page' => $products->currentPage(),
-                'last_page'    => $products->lastPage(),
-                'per_page'     => $products->perPage(),
-                'total'        => $products->total(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
             ],
         ]);
     }
@@ -131,13 +134,14 @@ class ProductDetailApiController extends Controller
             'collectionSubcategory:id,name,slug,collection_category_id',
         ])
             ->where('published', 1)
+            ->where('in_stock', true)
             ->latest('record_id')
             ->get();
 
         return response()->json([
             'success' => true,
-            'total'   => $products->count(),
-            'data'    => $products,
+            'total' => $products->count(),
+            'data' => $products,
         ]);
     }
 
@@ -178,67 +182,79 @@ class ProductDetailApiController extends Controller
 
     private const METAL_CATEGORY_MAP = [
         'gold' => [
-            'Bands', 'Bangles', 'Beaded Necklaces', 'Cocktail Rings', 'Cuban Chains',
-            'Dangle Earrings', 'Diamond Rings', 'Drop Earrings', 'Engagement Rings',
-            'Eternity Rings', 'Hoop Earrings', 'Lockets', 'Multi-Stone Rings',
-            'Rings', 'Solitaire Rings', 'Wedding Rings',
+            'Bands',
+            'Bangles',
+            'Beaded Necklaces',
+            'Cocktail Rings',
+            'Cuban Chains',
+            'Dangle Earrings',
+            'Diamond Rings',
+            'Drop Earrings',
+            'Engagement Rings',
+            'Eternity Rings',
+            'Hoop Earrings',
+            'Lockets',
+            'Multi-Stone Rings',
+            'Rings',
+            'Solitaire Rings',
+            'Wedding Rings',
         ],
-        'diamond'     => ['Diamond Rings', 'Wedding Rings'],
-        'rings'       => ['Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings'],
-        'earrings'    => ['Hoop Earrings', 'Drop Earrings', 'Dangle Earrings'],
-        'necklaces'   => ['Beaded Necklaces'],
-        'wedding'     => ['Wedding Rings'],
+        'diamond' => ['Diamond Rings', 'Wedding Rings'],
+        'rings' => ['Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings'],
+        'earrings' => ['Hoop Earrings', 'Drop Earrings', 'Dangle Earrings'],
+        'necklaces' => ['Beaded Necklaces'],
+        'wedding' => ['Wedding Rings'],
         'collections' => ['Bands', 'Bangles', 'Beaded Necklaces', 'Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings'],
-        'gifts'       => ['Bangles', 'Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings', 'Hoop Earrings', 'Drop Earrings'],
+        'gifts' => ['Bangles', 'Cocktail Rings', 'Diamond Rings', 'Engagement Rings', 'Eternity Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Wedding Rings', 'Hoop Earrings', 'Drop Earrings'],
     ];
 
     private const GENDER_CATEGORY_MAP = [
         'gold' => [
             'for_him' => ['Rings', 'Bands'],
             'for_her' => ['Bands', 'Bangles', 'Beaded Necklaces', 'Cuban Chains', 'Lockets', 'Rings', 'Earrings'],
-            'kids'    => ['Lockets', 'Earrings', 'Bands', 'Bangles'],
+            'kids' => ['Lockets', 'Earrings', 'Bands', 'Bangles'],
         ],
         'diamond' => [
             'for_him' => ['Diamond Rings', 'Engagement Rings'],
             'for_her' => ['Diamond Rings', 'Engagement Rings'],
-            'kids'    => ['Diamond Rings'],
+            'kids' => ['Diamond Rings'],
         ],
         'rings' => [
             'for_him' => ['Diamond Rings', 'Solitaire Rings', 'Engagement Rings', 'Wedding Rings'],
             'for_her' => ['Diamond Rings', 'Engagement Rings', 'Wedding Rings', 'Multi-Stone Rings', 'Solitaire Rings', 'Eternity Rings', 'Cocktail Rings'],
-            'kids'    => ['Diamond Rings', 'Solitaire Rings'],
+            'kids' => ['Diamond Rings', 'Solitaire Rings'],
         ],
         'earrings' => [
             'for_him' => [],
             'for_her' => ['Dangle Earrings', 'Drop Earrings', 'Hoop Earrings'],
-            'kids'    => ['Dangle Earrings', 'Drop Earrings', 'Hoop Earrings'],
+            'kids' => ['Dangle Earrings', 'Drop Earrings', 'Hoop Earrings'],
         ],
         'necklaces' => [
             'for_him' => [],
             'for_her' => ['Beaded Necklaces'],
-            'kids'    => ['Beaded Necklaces'],
+            'kids' => ['Beaded Necklaces'],
         ],
         'wedding' => [
             'for_him' => ['Wedding Rings'],
             'for_her' => ['Wedding Rings'],
-            'kids'    => ['Wedding Rings'],
+            'kids' => ['Wedding Rings'],
         ],
         'collections' => [
             'for_him' => ['Rings'],
             'for_her' => ['Bands', 'Bangles', 'Beaded Necklaces', 'Rings'],
-            'kids'    => ['Rings', 'Bands', 'Bangles'],
+            'kids' => ['Rings', 'Bands', 'Bangles'],
         ],
         'gifts' => [
             'for_him' => ['Rings'],
             'for_her' => ['Hoop Earrings', 'Drop Earrings', 'Bangles', 'Rings'],
-            'kids'    => ['Drop Earrings', 'Bangles', 'Rings'],
+            'kids' => ['Drop Earrings', 'Bangles', 'Rings'],
         ],
     ];
 
     public function byGender(Request $request): JsonResponse
     {
         $metalType = strtolower(trim($request->input('metal_type', '')));
-        $gender    = strtolower(trim($request->input('gender', '')));
+        $gender = strtolower(trim($request->input('gender', '')));
 
         if ($metalType === '') {
             return response()->json(['success' => false, 'message' => 'metal_type is required.'], 422);
@@ -260,7 +276,7 @@ class ProductDetailApiController extends Controller
         $maxPrice = $request->filled('max_price') ? (float) $request->input('max_price') : null;
 
         $data = collect(self::GENDER_CATEGORY_MAP[$metalType][$gender])->map(function (string $cat) use ($minPrice, $maxPrice) {
-            $query = ProductDetail::where('published', 1);
+            $query = ProductDetail::where('published', 1)->where('in_stock', true);
 
             if ($cat === 'Rings') {
                 $query->whereIn('categories', self::GOLD_RING_SUBCATEGORIES);
@@ -281,20 +297,20 @@ class ProductDetailApiController extends Controller
             $products = $query->orderBy('regular_price')->get();
 
             return [
-                'category'      => $cat,
-                'slug'          => \Illuminate\Support\Str::slug($cat),
+                'category' => $cat,
+                'slug' => \Illuminate\Support\Str::slug($cat),
                 'product_count' => $products->count(),
-                'products'      => $products,
+                'products' => $products,
             ];
-        })->filter(fn ($item) => $item['product_count'] > 0)->values();
+        })->filter(fn($item) => $item['product_count'] > 0)->values();
 
         return response()->json([
-            'success'          => true,
-            'metal_type'       => $metalType,
-            'gender'           => $gender,
+            'success' => true,
+            'metal_type' => $metalType,
+            'gender' => $gender,
             'total_categories' => $data->count(),
-            'total_products'   => $data->sum('product_count'),
-            'data'             => $data,
+            'total_products' => $data->sum('product_count'),
+            'data' => $data,
         ]);
     }
 
@@ -315,7 +331,7 @@ class ProductDetailApiController extends Controller
 
         $data = collect(self::METAL_CATEGORY_MAP[$metalType])->map(function (string $cat) use ($minPrice, $maxPrice) {
             // "Rings" is a virtual aggregate across all ring subcategories
-            $query = ProductDetail::where('published', 1);
+            $query = ProductDetail::where('published', 1)->where('in_stock', true);
 
             if ($cat === 'Rings') {
                 $query->whereIn('categories', self::GOLD_RING_SUBCATEGORIES);
@@ -334,19 +350,19 @@ class ProductDetailApiController extends Controller
             $products = $query->orderBy('regular_price')->get();
 
             return [
-                'category'      => $cat,
-                'slug'          => \Illuminate\Support\Str::slug($cat),
+                'category' => $cat,
+                'slug' => \Illuminate\Support\Str::slug($cat),
                 'product_count' => $products->count(),
-                'products'      => $products,
+                'products' => $products,
             ];
-        })->filter(fn ($item) => $item['product_count'] > 0)->values();
+        })->filter(fn($item) => $item['product_count'] > 0)->values();
 
         return response()->json([
-            'success'          => true,
-            'metal_type'       => $metalType,
+            'success' => true,
+            'metal_type' => $metalType,
             'total_categories' => $data->count(),
-            'total_products'   => $data->sum('product_count'),
-            'data'             => $data,
+            'total_products' => $data->sum('product_count'),
+            'data' => $data,
         ]);
     }
 
@@ -358,7 +374,7 @@ class ProductDetailApiController extends Controller
         $maxPrice = $request->filled('max_price') ? (float) $request->input('max_price') : null;
 
         $data = collect(self::OFFERS_CATEGORIES)->map(function (string $cat) use ($minPrice, $maxPrice) {
-            $query = ProductDetail::where('published', 1);
+            $query = ProductDetail::where('published', 1)->where('in_stock', true);
 
             if ($cat === 'Rings') {
                 $query->whereIn('categories', self::GOLD_RING_SUBCATEGORIES);
@@ -379,18 +395,18 @@ class ProductDetailApiController extends Controller
             $products = $query->orderBy('regular_price')->get();
 
             return [
-                'category'      => $cat,
-                'slug'          => \Illuminate\Support\Str::slug($cat),
+                'category' => $cat,
+                'slug' => \Illuminate\Support\Str::slug($cat),
                 'product_count' => $products->count(),
-                'products'      => $products,
+                'products' => $products,
             ];
-        })->filter(fn ($item) => $item['product_count'] > 0)->values();
+        })->filter(fn($item) => $item['product_count'] > 0)->values();
 
         return response()->json([
-            'success'          => true,
+            'success' => true,
             'total_categories' => $data->count(),
-            'total_products'   => $data->sum('product_count'),
-            'data'             => $data,
+            'total_products' => $data->sum('product_count'),
+            'data' => $data,
         ]);
     }
 
@@ -413,15 +429,15 @@ class ProductDetailApiController extends Controller
                 ->groupBy('categories')
                 ->orderByRaw('FIELD(categories, ' . implode(',', array_fill(0, count(self::GOLD_RING_SUBCATEGORIES), '?')) . ')', self::GOLD_RING_SUBCATEGORIES)
                 ->get()
-                ->map(fn ($row) => [
-                    'categories'    => $row->categories,
-                    'slug'          => \Illuminate\Support\Str::slug($row->categories),
-                    'image'         => $row->image,
+                ->map(fn($row) => [
+                    'categories' => $row->categories,
+                    'slug' => \Illuminate\Support\Str::slug($row->categories),
+                    'image' => $row->image,
                     'product_count' => $row->product_count,
                 ]);
 
             return response()->json([
-                'success'    => true,
+                'success' => true,
                 'metal_type' => 'rings',
                 'categories' => $categories,
             ]);
@@ -430,8 +446,8 @@ class ProductDetailApiController extends Controller
         // Keywords mapped to LIKE patterns searched in the categories column.
         $categoryKeywordMap = [
             'necklaces' => ['%necklace%', '%necklaces%'],
-            'wedding'   => ['%wedding%'],
-            'earrings'  => ['%earrings%'],
+            'wedding' => ['%wedding%'],
+            'earrings' => ['%earrings%'],
         ];
 
         $query = ProductDetail::whereNotNull('categories')
@@ -452,15 +468,15 @@ class ProductDetailApiController extends Controller
         }
 
         $categories = $query->get()
-                    ->map(fn ($row) => [
-                                'categories'    => $row->categories,
-                                'slug'          => \Illuminate\Support\Str::slug($row->categories),
-                                'image'         => $row->image,
-                                'product_count' => $row->product_count,
-                            ]);
+            ->map(fn($row) => [
+                'categories' => $row->categories,
+                'slug' => \Illuminate\Support\Str::slug($row->categories),
+                'image' => $row->image,
+                'product_count' => $row->product_count,
+            ]);
 
         return response()->json([
-            'success'    => true,
+            'success' => true,
             'metal_type' => $metalType,
             'categories' => $categories,
         ]);
@@ -479,6 +495,42 @@ class ProductDetailApiController extends Controller
 
             if ($row && $row->product_count > 0) {
                 $data->push([
+                    'categories' => $cat,
+                    'slug' => \Illuminate\Support\Str::slug($cat),
+                    'image' => $row->image,
+                    'product_count' => $row->product_count,
+                ]);
+            }
+        }
+
+        // Earrings: aggregate across Dangle, Drop, Hoop
+        foreach (self::GOLD_EARRING_SUBCATEGORIES as $cat) {
+            $row = ProductDetail::where('published', 1)
+                // ->where('meta_metal', 'gold')
+                ->where('categories', $cat)
+                ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
+                ->first();
+
+            if ($row && $row->product_count > 0) {
+                $data->push([
+                    'categories' => $cat,
+                    'slug' => \Illuminate\Support\Str::slug($cat),
+                    'image' => $row->image,
+                    'product_count' => $row->product_count,
+                ]);
+            }
+        }
+
+        // Rings: aggregate across all ring subcategories
+        foreach (self::GOLD_RING_SUBCATEGORIES as $cat) {
+            $row = ProductDetail::where('published', 1)
+                // ->where('meta_metal', 'gold')
+                ->where('categories', $cat)
+                ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
+                ->first();
+
+            if ($row && $row->product_count > 0) {
+                $data->push([
                     'categories'    => $cat,
                     'slug'          => \Illuminate\Support\Str::slug($cat),
                     'image'         => $row->image,
@@ -487,41 +539,8 @@ class ProductDetailApiController extends Controller
             }
         }
 
-        // Earrings: aggregate across Dangle, Drop, Hoop
-        $earringRow = ProductDetail::where('published', 1)
-            // ->where('meta_metal', 'gold')
-            ->whereIn('categories', self::GOLD_EARRING_SUBCATEGORIES)
-            ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
-            ->first();
-
-        if ($earringRow && $earringRow->product_count > 0) {
-            $data->push([
-                'categories'    => 'Earrings',
-                'slug'          => 'earrings',
-                'image'         => $earringRow->image,
-                'product_count' => $earringRow->product_count,
-                'subcategories' => self::GOLD_EARRING_SUBCATEGORIES,
-            ]);
-        }
-
-        // Rings: aggregate across all ring subcategories
-        $ringRow = ProductDetail::where('published', 1)
-            // ->where('meta_metal', 'gold')
-            ->whereIn('categories', self::GOLD_RING_SUBCATEGORIES)
-            ->selectRaw('MIN(images) as image, COUNT(*) as product_count')
-            ->first();
-
-        if ($ringRow && $ringRow->product_count > 0) {
-            $data->push([
-                'categories'    => 'Rings',
-                'slug'          => 'rings',
-                'image'         => $ringRow->image,
-                'product_count' => $ringRow->product_count,
-            ]);
-        }
-
         return response()->json([
-            'success'    => true,
+            'success' => true,
             'metal_type' => 'gold',
             'categories' => $data->values(),
         ]);
@@ -551,10 +570,10 @@ class ProductDetailApiController extends Controller
      */
     public function browse(Request $request): JsonResponse
     {
-        $perPage       = min($request->integer('per_page', 50), 100);
+        $perPage = min($request->integer('per_page', 50), 100);
         $jewelleryType = strtolower(trim($request->input('jewellery_type', '')));
 
-        $query = ProductDetail::where('published', 1);
+        $query = ProductDetail::where('published', 1)->where('in_stock', true);
 
         if ($jewelleryType !== '') {
             $query->where('name', 'like', "%{$jewelleryType}%");
@@ -565,14 +584,14 @@ class ProductDetailApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'total'   => $products->total(),
-            'data'    => $products->items(),
+            'total' => $products->total(),
+            'data' => $products->items(),
             'pagination' => [
                 'current_page' => $products->currentPage(),
-                'per_page'     => $products->perPage(),
-                'total'        => $products->total(),
-                'last_page'    => $products->lastPage(),
-                'has_more'     => $products->hasMorePages(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'last_page' => $products->lastPage(),
+                'has_more' => $products->hasMorePages(),
             ],
         ]);
     }
@@ -595,16 +614,16 @@ class ProductDetailApiController extends Controller
      */
     public function search(Request $request): JsonResponse
     {
-        $query = ProductDetail::where('published', 1);
+        $query = ProductDetail::where('published', 1)->where('in_stock', true);
 
         if ($request->filled('q')) {
             $q = $request->input('q');
             $query->where(function ($sq) use ($q) {
-                $sq->where('name',        'like', "%{$q}%")
-                   ->orWhere('categories',  'like', "%{$q}%")
-                   ->orWhere('description', 'like', "%{$q}%")
-                   ->orWhere('meta_metal',  'like', "%{$q}%")   
-                   ->orWhere('regular_price',  'like', "%{$q}%");
+                $sq->where('name', 'like', "%{$q}%")
+                    ->orWhere('categories', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%")
+                    ->orWhere('meta_metal', 'like', "%{$q}%")
+                    ->orWhere('regular_price', 'like', "%{$q}%");
             });
         }
 
@@ -632,20 +651,20 @@ class ProductDetailApiController extends Controller
             $query->where('regular_price', '<=', $request->input('max_price'));
         }
 
-        $perPage  = min($request->integer('per_page', 20), 100);
+        $perPage = min($request->integer('per_page', 20), 100);
         $products = $query->latest('record_id')
             ->paginate($perPage, ['*'], 'page', $request->integer('page', 1));
 
         return response()->json([
             'success' => true,
-            'total'   => $products->total(),
-            'data'    => $products->items(),
+            'total' => $products->total(),
+            'data' => $products->items(),
             'pagination' => [
                 'current_page' => $products->currentPage(),
-                'per_page'     => $products->perPage(),
-                'total'        => $products->total(),
-                'last_page'    => $products->lastPage(),
-                'has_more'     => $products->hasMorePages(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'last_page' => $products->lastPage(),
+                'has_more' => $products->hasMorePages(),
             ],
         ]);
     }

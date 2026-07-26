@@ -87,7 +87,7 @@ class ProductDetailCategoryApiController extends Controller
     private function showRings(): JsonResponse
     {
         $data = collect(self::RINGS_CATEGORY_ORDER)->map(function (string $cat) {
-            $result = $this->service->forFilter($cat, null);
+            $result = $this->service->forFilter($cat, null, false);
             return [
                 'category'      => $cat,
                 'slug'          => \Illuminate\Support\Str::slug($cat),
@@ -107,7 +107,7 @@ class ProductDetailCategoryApiController extends Controller
     private function showEarrings(): JsonResponse
     {
         $data = collect(self::EARRINGS_CATEGORY_ORDER)->map(function (string $cat) {
-            $result = $this->service->forFilter($cat, null);
+            $result = $this->service->forFilter($cat, null, false);
             return [
                 'category'      => $cat,
                 'slug'          => \Illuminate\Support\Str::slug($cat),
