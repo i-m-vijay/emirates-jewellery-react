@@ -203,7 +203,7 @@ function Header() {
         </div>
 
         <nav className="nav">
-          {['Gold','Diamond','Rings','Earrings','Necklaces','Wedding','Collections','Gifts'].map((item) => (
+          {['Gold','Diamond','Rings','Earrings','Necklaces','Lockets','Bangles','Wedding','Collections','Gifts'].map((item) => (
             <a
               key={item}
               className={activeNav === item ? 'nav-active' : ''}

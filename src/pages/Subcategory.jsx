@@ -84,9 +84,9 @@ function Subcategory() {
       <div className="cat-page__header">
         <h1 className="cat-page__title">
           {displayName}
-          {!loading && subcategories.length > 0 && (
+          {/* {!loading && subcategories.length > 0 && (
             <span className="cat-page__count"> ({subcategories.length} Categories)</span>
-          )}
+          )} */}
         </h1>
       </div>
 

@@ -30,6 +30,8 @@ const NAV_TO_METAL = {
   Rings:       'rings',
   Earrings:    'earrings',
   Necklaces:   'necklaces',
+  Lockets:     'lockets',
+  Bangles:     'bangles',
   Wedding:     'wedding',
   Collections: 'gold',
   Gifts:       'gold',
@@ -37,6 +39,18 @@ const NAV_TO_METAL = {
 
 // ── Hardcoded categories for nav items that don't use the API ───────────────
 const STATIC_ITEMS = {
+  Rings: [
+    { label: 'Bands', slug: 'bands', img: `${CATIMAGES_PATH}bands.jpg` },
+  ],
+  Necklaces: [
+    { label: 'Cuban Chains', slug: 'cuban-chains', img: `${CATIMAGES_PATH}cuban-chains.jpg` },
+  ],
+  Lockets: [
+    { label: 'Lockets', slug: 'lockets', img: `${CATIMAGES_PATH}lockets.jpg` },
+  ],
+  Bangles: [
+    { label: 'Bangles', slug: 'bangles', img: `${CATIMAGES_PATH}bangles.jpg` },
+  ],
   Collections: [
     { label: 'Rings',           slug: 'rings',           img: `${CATIMAGES_PATH}rings.jpg` },
     { label: 'Bands',           slug: 'bands',           img: `${CATIMAGES_PATH}bands.jpg` },
@@ -85,6 +99,8 @@ const NAV_ACCENTS = {
   Rings:       '#8b1f1f',
   Earrings:    '#8b1f1f',
   Necklaces:   '#8b1f1f',
+  Lockets:     '#8b1f1f',
+  Bangles:     '#8b1f1f',
   Wedding:     '#c5933a',
   Collections: '#005a55',
   Gifts:       '#c5933a',
@@ -96,6 +112,8 @@ const NAV_PROMOS = {
   Rings:       `${IMAGE_PATH}ring.jpg`,
   Earrings:    `${IMAGE_PATH}earrings.jpg`,
   Necklaces:   `${IMAGE_PATH}beaded-necklace.jpg`,
+  Lockets:     `${IMAGE_PATH}lockets.jpg`,
+  Bangles:     `${IMAGE_PATH}bangles.jpg`,
   Wedding:     `${IMAGE_PATH}bridal-2.jpg`,
   Collections: `${IMAGE_PATH}best-seller-1.jpg`,
   Gifts:       `${IMAGE_PATH}gift-1.jpg`,
@@ -158,8 +176,12 @@ export default function JewelleryHoverModal({ item, onMouseEnter, onMouseLeave, 
   const metalType = NAV_TO_METAL[item];
 
   useEffect(() => {
-    if (STATIC_ITEMS[item]) {
-      setStyleItems(STATIC_ITEMS[item]);
+    const staticExtras = STATIC_ITEMS[item] || [];
+    const staticOnlyItems = ['Collections', 'Gifts', 'Lockets', 'Bangles'];
+    const shouldUseStaticOnly = staticOnlyItems.includes(item);
+
+    if (shouldUseStaticOnly) {
+      setStyleItems(staticExtras);
       return;
     }
 
@@ -171,31 +193,40 @@ export default function JewelleryHoverModal({ item, onMouseEnter, onMouseLeave, 
     fetchCategoriesByMetal(metalType)
       .then((res) => {
         if (stale) return;
+
+        let apiItems = [];
         if (res.success && Array.isArray(res.categories) && res.categories.length > 0) {
-          setStyleItems(
-            res.categories.slice(0, 12).map((cat) => {
-              const name = cat.categories;
-              const slug = cat.slug || toSlug(name);
-              const catImage = SLUG_TO_CATIMAGE[slug]
-                ? `${CATIMAGES_PATH}${SLUG_TO_CATIMAGE[slug]}`
-                : `${CATIMAGES_PATH}${slug}.jpg`;
-              const fallbackImg = cat.image
-                ? cat.image.split(',')[0].trim()
-                : `${IMAGE_PATH}${slug}.jpg`;
-              return {
-                label: name,
-                slug,
-                img: catImage,
-                fallbackImg,
-              };
-            })
-          );
+          apiItems = res.categories.slice(0, 12).map((cat) => {
+            const name = cat.categories;
+            const slug = cat.slug || toSlug(name);
+            const catImage = SLUG_TO_CATIMAGE[slug]
+              ? `${CATIMAGES_PATH}${SLUG_TO_CATIMAGE[slug]}`
+              : `${CATIMAGES_PATH}${slug}.jpg`;
+            const fallbackImg = cat.image
+              ? cat.image.split(',')[0].trim()
+              : `${IMAGE_PATH}${slug}.jpg`;
+            return {
+              label: name,
+              slug,
+              img: catImage,
+              fallbackImg,
+            };
+          });
         } else {
-          setStyleItems(FALLBACK_ITEMS);
+          apiItems = FALLBACK_ITEMS;
         }
+
+        const mergedItems = staticExtras.length
+          ? [
+              ...apiItems,
+              ...staticExtras.filter((extra) => !apiItems.some((existing) => existing.slug === extra.slug || existing.label === extra.label)),
+            ]
+          : apiItems;
+
+        setStyleItems(mergedItems);
       })
       .catch(() => {
-        if (!stale) setStyleItems(FALLBACK_ITEMS);
+        if (!stale) setStyleItems(staticExtras.length ? staticExtras : FALLBACK_ITEMS);
       })
       .finally(() => { if (!stale) setLoading(false); });
 

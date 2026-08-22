@@ -145,8 +145,7 @@ function DetailRow({ label, value }) {
   );
 }
 
-function SimilarCard({ product, onClick }) {
-  const [wishlisted, setWishlisted] = useState(false);
+function SimilarCard({ product, onClick, wishlisted, onToggleWishlist }) {
   const image = product.images?.split(',')[0]?.trim();
   const hasDiscount = product.sale_price && parseFloat(product.sale_price) < parseFloat(product.regular_price);
 
@@ -157,11 +156,11 @@ function SimilarCard({ product, onClick }) {
           ? <img src={image} alt={product.name} loading="lazy" decoding="async" />
           : <div className="pdp__no-img">No Image</div>}
         <button
-          className={`pdp__similar-wish ${wishlisted ? 'active' : ''}`}
-          onClick={(e) => { e.stopPropagation(); setWishlisted((w) => !w); }}
-          aria-label="Wishlist"
+          className={`product-card__wish ${wishlisted ? 'active' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleWishlist(); }}
+          aria-label={wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
         >
-          <Heart size={15} fill={wishlisted ? '#e84b5d' : 'none'} stroke={wishlisted ? '#e84b5d' : '#888'} />
+          <Heart size={17} fill={wishlisted ? '#e84b5d' : 'none'} stroke={wishlisted ? '#e84b5d' : '#555'} />
         </button>
       </div>
       <div className="pdp__similar-info">
@@ -485,7 +484,7 @@ function ProductDetail() {
       {/* ── Price Breakup ── */}
       {regularPrice && (
         <div className="pdp__section">
-          <Accordion title="Price Breakup" defaultOpen={false}>
+          <Accordion title="Price Breakup" defaultOpen={true}>
             <div className="pdp__price-table-wrap">
               <table className="pdp__price-table">
                 <thead>
@@ -561,7 +560,13 @@ function ProductDetail() {
             </button>
             <div className="pdp__similar-grid">
               {visibleSimilar.map((p) => (
-                <SimilarCard key={p.record_id} product={p} onClick={() => handleSimilarClick(p)} />
+                <SimilarCard
+                  key={p.record_id}
+                  product={p}
+                  wishlisted={isInWishlist(p.record_id)}
+                  onToggleWishlist={() => guard(() => toggleItem(p))}
+                  onClick={() => handleSimilarClick(p)}
+                />
               ))}
             </div>
             <button

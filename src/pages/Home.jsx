@@ -9,7 +9,7 @@ const CATIMAGE_PATH = '/assets/images/catimages/';
 
 const heroSlides = [
   `${IMAGE_PATH}banner_03.jpg`,
-  `${IMAGE_PATH}banner_01.jpg`,
+  // `${IMAGE_PATH}banner_01.jpg`,
   `${IMAGE_PATH}banner_02.jpg`,
 ];
 
@@ -173,7 +173,7 @@ function Home() {
     <>
       {/* ── Hero Slider ── */}
       <section className="hero-slider">
-        <div className="hero-track">
+        <div className="hero-track" data-slide-count={heroSlides.length}>
           {heroSlides.map((slide, index) => (
             <div className="hero-slide" key={slide}>
               <img
